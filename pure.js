@@ -1,37 +1,58 @@
 /* Logical tests */
-
-export const test_ = {
+export const is = (function () {
     // 'True' if any arguments are undefined/null/empty.
-    blanks : (...args) => { for (a of args) {if (typeof a === 'undefined' || a === null || a === '') { return true }} return false}, 
+    const blanks = (...args) => { for (let a of args) { if (typeof a === 'undefined' || a === null || a === '') { return true } } return false };
     // 'True' if type is array.
-    typeArray : (x) => Object.prototype.toString.call(x) === '[object Array]', 
-    // 'True' if type is object but not array.
-    typeObjectPure : (x) => typeof x === 'object' && this.typeArray(x) === false, 
-    // 'True' if all properties of an object are null, undefined, or empty string
-    emptyObjectPure : (obj) => {if (this.typeObjectPure(obj) === false) throw "Input is not an object"; else return Object.values(obj).every(prop => prop === null || prop === '')}
-}
-// const test_blanks = (...args) => { // 'True' if any arguments are undefined/null/empty.
-//     for (a of args) {
-//         if (typeof a === 'undefined' || a === null || a === '') { return true }
-//     } return false
-// }
+    const typeArray = (x) => Object.prototype.toString.call(x) === '[object Array]';
+    // 'True' if type is 'object' but not 'array' or 'null'.
+    const typeObjectPure = (x) => typeof x === 'object' && !typeArray(x) && x !== null;
 
-// const test_typeArray = (x) => Object.prototype.toString.call(x) === '[object Array]'; // 'True' if type is array.
-
-// const test_typeObjectPure = (x) => typeof x === 'object' && test_typeArray(x) === false; // 'True' if type is object but not array.
-
-// // const test_emptyObjectPure = (object) => { // 'True' if all properties of an object are null, undefined, or empty string.
-//     if (test_typeObjectPure(object) === false) throw "Input is not an object";
-//     else return Object.values(object).every(prop => prop === null || prop === '');
-// }
+    /**
+    Returns 'true' if all properties/subproperties of an object are null, undefined, or empty.
+    @param {Array} objs An array of objects
+    @return {Boolean} Whether the object is completely empty
+    @example 
+    is.emptyObjectPure([{nothing:''},{something:{sub1: { nothing: '' } }, sub2: { something: 'hello' }}]) //=> false
+    is.emptyObjectPure([{nothing:''},{something:{sub1: { nothing: '' } }, sub2: { something: '' }}]) //=> true
+    */
+    const emptyObjectPure = (objs) => {
+        const _subObjs = []
+        for (let obj of objs) {
+            for (let val of Object.values(obj)) {
+                if (!blanks(val) && !typeObjectPure(val)) return false // Stop if any 'blanks' found
+                else if (typeObjectPure(val)) _subObjs.push(val) // Create array of subobjects
+            }
+        }
+        if (_subObjs.length > 0) return emptyObjectPure(_subObjs); // Recurse subobjects
+        return true
+    }
+    return { blanks, typeArray, typeObjectPure, emptyObjectPure }
+})()
 
 /* Simple methods to return date/time */
-Date.prototype.getFullDate = function (cat) { if (!cat) { cat = '' } return (this.getFullYear() + cat + (((this.getMonth() + 1) < 10) ? "0" : "") + cat + (this.getMonth() + 1) + cat + ((this.getDate() < 10) ? "0" : "") + this.getDate()) }
-Date.prototype.getFullTime = function (cat) { if (!cat) { cat = '' } return (((this.getHours() < 10) ? "0" : "") + this.getHours() + cat + ((this.getMinutes() < 10) ? "0" : "") + this.getMinutes() + cat + ((this.getSeconds() < 10) ? "0" : "") + this.getSeconds()) }
-// ^ Sample: const prefixTime = `${new Date().getFullDate() + '_' + new Date().getFullTime()}`
+export const temporal = (function(){
+    const _convertToDate = (_str) => (_str) ? new Date(_str) : new Date()
+    /*(_day = _convertToDate(day),cat) =>*/
+    const date = (day, cat = '') => {
+        const _day = _convertToDate(day)
+        return (_day.getFullYear() + cat + (((_day.getMonth() + 1) < 10) ? "0" : "") + (_day.getMonth() + 1) + cat + ((_day.getDate() < 10) ? "0" : "") + _day.getDate()); 
+    }
+    const time = (day, cat = '') => { 
+        const _day = _convertToDate(day)
+        return (((_day.getHours() < 10) ? "0" : "") + _day.getHours() + cat + ((_day.getMinutes() < 10) ? "0" : "") + _day.getMinutes() + cat + ((_day.getSeconds() < 10) ? "0" : "") + _day.getSeconds()); }
+    return {date,time}
+})()
 
 /* Misc */
-export const sleep = (ms) => { return new Promise(resolve => setTimeout(resolve, ms)); } // Makes script/function to pause.
+
+/**
+* Makes scriptpause.
+* @param {Number} ms  Milliseconds
+*
+*/
+export const sleep = (ms) => {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 export const click_selector = (sel, el = document) => el.querySelector(sel).click(); // Clicks a given selector on a given element.
 
@@ -39,6 +60,6 @@ export const find_classFromNodelist = (_class, ...els) => { // Returns a node wi
     let cycle
     for (el of els) {
         if (cycle === false) return el
-        if (el.classList.contains(_class)) {cycle = false}
+        if (el.classList.contains(_class)) { cycle = false }
     }
 }
