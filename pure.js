@@ -67,7 +67,7 @@ throttle(console.log, 1000, 'third click')
 const throttle = (() => {
     let runs = 0
     return (fn, ms, ...args) => {
-      runs += 1
+      runs += 1 // Number of function calls
       const currentRun = runs
       setTimeout(() => {
         if (currentRun === runs) fn(...args)
