@@ -55,7 +55,7 @@ export const sleep = (ms) => {
 }
 
 /**
-Throttles callback function executions to one per timeout limit.  
+Throttles callback function executions to one per timeout limit, keeping the last input or event.  
 @param {Function} ms  Callback function
 @param {Number} ms  Milliseconds
 @param {Any} args Arguments for function
