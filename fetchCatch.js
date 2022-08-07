@@ -1,7 +1,8 @@
 /**
-Add defaults, timeouts, and response error handling to the native fetch API.
+Add default headers, parameter parsing, timeouts, and response error handling to the native fetch API.
 
-@param {String} url  Endpoint URL.
+@param {String} endpoint  Endpoint URL.
+@param {Object} params  Paramters to append to endpoint.  
 @param {String} token  Authentication token.
 @param {Any} body HTTP message body. Automatically parsed depending on type.  
 @param {Object} options Override options to pass to fetch.  
@@ -10,13 +11,17 @@ Add defaults, timeouts, and response error handling to the native fetch API.
 @param {Boolean} useDefaults Disable default options if false.  
 
 @example
-fetchCatch("https://api.github.com/users/octocat").then(prom => console.log(prom))
+fetchCatch("https://api.github.com/rate_limit").then(prom => console.log(prom))
+fetchCatch("https://api.github.com/search/repositories", {q:"Octocat in:readme"}).then(prom => console.log(prom))
 
 */
 
-export const fetchCatch = async (url, token, body, options = {}, format = "json", timeout = undefined, useDefaults = true) => {
+export const fetchCatch = async (endpoint, params, token, body, options = {}, format = "json", timeout = undefined, useDefaults = true) => {
   let defaultOptions = {}
   const formats = ["json", "text", "blob", "formData"]
+  const url = new URL(endpoint)
+  url.search = params ? new URLSearchParams(params) : null
+  const controller = timeout ? new AbortController() : null
 
   /* Guard clauses */
   try {
@@ -24,10 +29,6 @@ export const fetchCatch = async (url, token, body, options = {}, format = "json"
     if (timeout && typeof timeout !== "number") throw "Timeout must be a number!"
     if (format && !formats.find((item) => format === item)) throw `Format invalid! Must be one of: ${formats}.`
   } catch (err) {throw new TypeError(err)}
-
-
-  /* Handle timeout if specified*/ 
-  const controller = timeout ? new AbortController() : null
 
   /* Set default http options */
   if (!useDefaults) {
