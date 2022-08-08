@@ -19,8 +19,7 @@ fetchCatch("https://api.github.com/search/repositories", {q:"Octocat in:readme"}
 export const fetchCatch = async (endpoint, params, token, body, options = {}, format = "json", timeout = undefined, useDefaults = true) => {
   let defaultOptions = {}
   const formats = ["json", "text", "blob", "formData"]
-  const url = new URL(endpoint)
-  url.search = params ? new URLSearchParams(params) : null
+  const url = params ? endpoint + '?' + new URLSearchParams(params).toString() : endpoint
   const controller = timeout ? new AbortController() : null
 
   /* Guard clauses */
