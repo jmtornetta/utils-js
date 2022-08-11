@@ -1,11 +1,4 @@
 /**
-* Makes scriptpause.
-* @param {Number} ms  Milliseconds
-*
-*/
-export const sleep = (ms) => (new Promise(resolve => setTimeout(resolve, ms)));
-
-/**
 * Joins class names. Useful with TailwindCSS.  
 * @param {Any} classes  A list or array of strings.  
 *
