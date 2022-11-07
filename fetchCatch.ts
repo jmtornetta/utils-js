@@ -21,7 +21,7 @@ fetchCatch("https://api.github.com/rate_limit")
 fetchCatch("https://api.github.com/search/repositories?utm_source=google", {urlParameters : {q:"Octocat in:readme"}, timeout: 9000, consoleLogs: 'errors' })
 
 */
-export default async function fetchCatch(
+export async function fetchCatch(
   input: string | URL,
   options: Partial<{
     urlParameters: URLSearchParams | {[key:string]:string},
