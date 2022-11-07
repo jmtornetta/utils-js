@@ -6,7 +6,7 @@ TODO-MAYBE Implement progress bar per:
 */
 
 /**
-Adds reasonable defaults, parameter parsing, timeouts, response error handling, and intellisense request content-types to the native fetch API.
+Adds reasonable defaults, parameter parsing, timeouts, response error handling, generic return-type typecasting, and intellisense request content-types to the native fetch API.
 
 @param input - A string or URL. Converted to URL at runtime.  
 @param [options.urlParameters] - URL parameters to append to endpoint. Retains existing parameters.   
@@ -18,21 +18,33 @@ Adds reasonable defaults, parameter parsing, timeouts, response error handling, 
 
 @example
 fetchCatch("https://api.github.com/rate_limit")
-fetchCatch("https://api.github.com/search/repositories?utm_source=google", {urlParameters : {q:"Octocat in:readme"}, timeout: 9000, consoleLogs: 'errors' })
+fetchCatch("https://api.github.com/rate_limit",{responseFormatMethod: 'none',})
+fetchCatch<Record<string,any>>("https://api.github.com/search/repositories?utm_source=google", {urlParameters : {q:"Octocat in:readme"}, timeout: 9000, consoleLogs: 'errors' })
 
 */
-export async function fetchCatch(
-  input: string | URL,
+
+/* Function overloads */
+// Default function signature. 'Options' redundancy provided for hover-over intellisense.
+export async function fetchCatch<TPromiseReturnType>(
+  input: URL | string,
   options: Partial<{
     urlParameters: URLSearchParams | {[key:string]:string},
     requestFormat: HeaderContentType,
-    responseFormatMethod: keyof Response & ('json' | 'text' | 'formData' | 'blob' | 'arrayBuffer') | 'none',
+    responseFormatMethod: 'json' | 'text' | 'formData' | 'blob' | 'arrayBuffer',
     token: string,
     timeout: number,
     consoleLogs: 'all' | 'errors' | 'none',
     body: BodyInit, // Also included in 'RequestInit' but left here for VSCode hover-over-clarity.
     headers: HeadersInit, // Also included in 'RequestInit' but left here for VSCode hover-over-clarity. Overrides other specified headers props.
-  } & RequestInit> = {}
+  }>
+) : Promise<TPromiseReturnType>
+export async function fetchCatch(
+  input: FetchInput,
+  options: {responseFormatMethod: 'none'} & Partial<IOptions>
+) : Promise<Response>
+export async function fetchCatch<TPromiseReturnType>(
+  input: string | URL,
+  options: Partial<IOptions> = {}
 ) {
   const {
     requestFormat = 'application/json',
@@ -85,7 +97,7 @@ export async function fetchCatch(
     if (timerId) clearTimeout(timerId)
     if (responseFormatMethod === 'none') return response
 
-    const formatResponse = await response[responseFormatMethod]()
+    const formatResponse : TPromiseReturnType = await response[responseFormatMethod]()
     log(false, 'Response:', formatResponse)
     return formatResponse
   } catch (err) {
@@ -93,10 +105,9 @@ export async function fetchCatch(
     let errMsg = 'Fetch failed! '
     errMsg += err instanceof Error ? err.message : `${err}`
     log(true, errMsg)
-    return Error(errMsg)
   }
 }
-
+type FetchInput = URL | string;
 type HeaderContentType = (
   "application/EDI-X12" |
   "application/EDIFACT" |
@@ -136,3 +147,11 @@ type HeaderContentType = (
   "video/x-flv" |
   "video/webm"
 )
+interface IOptions extends RequestInit {
+  urlParameters: URLSearchParams | {[key:string]:string},
+  requestFormat: HeaderContentType,
+  responseFormatMethod: keyof Response & ('json' | 'text' | 'formData' | 'blob' | 'arrayBuffer') | 'none',
+  token: string,
+  timeout: number,
+  consoleLogs: 'all' | 'errors' | 'none',
+}
