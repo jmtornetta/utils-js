@@ -58,7 +58,7 @@ export async function fetchCatch<TPromiseReturnType>(
     ...restOfOptions
   } = options
 
-  let url = new URL(input)
+  const url = new URL(input)
   url.search = '?' + url.searchParams.toString() + (urlParameters ? '&' + new URLSearchParams(urlParameters).toString() : '')
 
   const log = (isError:boolean, ...message: any) => {
