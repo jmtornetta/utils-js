@@ -20,3 +20,8 @@ export type KeysMatching<TObj, TMatching> = {
 export type UnionOfMatchingKeys<TObjA, TObjB> = {
   [P in keyof TObjA]: P extends keyof TObjB ? TObjA[P] | TObjB[P] : TObjA[P];
 };
+type _TupleOf<T, N extends number, R extends unknown[]> = R['length'] extends N ? R : _TupleOf<T, N, [T, ...R]>;
+/**
+ * Create a tuple type of a given type and length.
+ */
+export type Tuple<T, N extends number> = N extends N ? number extends N ? T[] : _TupleOf<T, N, []> : never;
