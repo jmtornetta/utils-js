@@ -25,3 +25,22 @@ type _TupleOf<T, N extends number, R extends unknown[]> = R['length'] extends N 
  * Create a tuple type of a given type and length.
  */
 export type Tuple<T, N extends number> = N extends N ? number extends N ? T[] : _TupleOf<T, N, []> : never;
+/**
+ * Make all properties and subproperties of an object readonly. Useful for constants and objects using `Object.freeze`.
+ */
+export type DeepReadonly<T> =
+  T extends (infer R)[] ? ReadonlyArray<DeepReadonly<R>> :
+  T extends object ? { readonly [K in keyof T]: DeepReadonly<T[K]> } :
+  T;
+/**
+ * Make all properties and subproperties of an object required.
+ */
+export type DeepRequired<T> = {
+  [K in keyof T]-?: T[K] extends object ? DeepRequired<T[K]> : T[K];
+};
+/**
+ * Make all properties and subproperties of an object optional.
+ */
+export type DeepPartial<T> = {
+  [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K];
+};
